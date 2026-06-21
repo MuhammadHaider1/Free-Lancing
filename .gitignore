@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables
+.env
+.env.*
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Python Build Files
+build/
+dist/
+*.egg-info/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Node Modules
+node_modules/
+
+# React Build
+build/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+
+# JWT / Secret Files
+secrets.json
