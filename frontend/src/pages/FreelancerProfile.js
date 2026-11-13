@@ -128,17 +128,8 @@ function FreelancerProfile() {
             <div className="absolute inset-0 bg-grid bg-grid opacity-25" aria-hidden="true" />
           </div>
           <div className="px-5 pb-6 sm:px-7">
-            <div className="relative z-10 -mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="flex items-end gap-4">
-                <Avatar name={freelancer.username} size="xl" className="ring-4 ring-white" />
-                <div className="pb-1">
-                  <h2 className="font-display text-xl font-bold text-ink-900">{freelancer.username}</h2>
-                  <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-ink-500">
-                    <BadgeCheck className="h-3.5 w-3.5 text-accent-500" aria-hidden="true" />
-                    {freelancer.email || 'FreelanceHub member'}
-                  </p>
-                </div>
-              </div>
+            <div className="relative z-10 -mt-10 flex items-end justify-between gap-4">
+              <Avatar name={freelancer.username} size="xl" className="ring-4 ring-white" />
 
               <div className="flex items-center gap-2 pb-1">
                 {freelancer.average_rating ? (
@@ -150,6 +141,14 @@ function FreelancerProfile() {
                   <span className="badge-neutral">New on the platform</span>
                 )}
               </div>
+            </div>
+
+            <div className="mt-4">
+              <h2 className="font-display text-xl font-bold text-ink-900">{freelancer.username}</h2>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-ink-500">
+                <BadgeCheck className="h-3.5 w-3.5 text-accent-500" aria-hidden="true" />
+                {freelancer.email || 'FreelanceHub member'}
+              </p>
             </div>
 
             <p className="mt-5 max-w-3xl text-sm leading-relaxed text-ink-600">
