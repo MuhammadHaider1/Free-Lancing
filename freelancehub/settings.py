@@ -176,3 +176,35 @@ FORCE_SCRIPT_NAME = ''
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
+
+
+# ===== REDIS & CACHE =====
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+            'IGNORE_EXCEPTIONS': True,  # Redis down hone pe crash na kare
+        },
+        'TIMEOUT': 300,  # Default 5 min
+        'KEY_PREFIX': 'freelancehub',  # Har key pe prefix lagao
+    }
+}
+
+# Session Redis mein
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# Cache timeouts — alag alag data ke liye
+CACHE_TTL = {
+    'SERVICES_LIST': 300,
+    'SERVICE_DETAIL': 600,
+    'PROJECTS_LIST': 300,
+    'PROJECT_DETAIL': 600,
+    'USER_PROFILE': 900,
+    'REVIEWS_LIST': 300,
+    'DASHBOARD': 180,
+}

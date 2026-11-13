@@ -70,11 +70,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             'role',
             'bio',
             'profile_picture',
-            'created_at',
-            'services_count',
-            'completed_orders',
-            'average_rating',
-            'reviews_count'
+            'password',
+            'created_at'
         ]
         read_only_fields = ['created_at']
 
