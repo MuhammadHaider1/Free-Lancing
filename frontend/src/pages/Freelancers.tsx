@@ -127,7 +127,7 @@ function Freelancers() {
                   </div>
 
                   <div className="px-5 pb-5">
-                    <div className="-mt-7 flex items-end justify-between">
+                    <div className="relative z-10 -mt-7 flex items-end justify-between">
                       <Avatar name={freelancer.username} size="lg" className="ring-4 ring-white" />
                       <span className="mb-1 inline-flex items-center gap-1 text-xs font-semibold text-ink-600">
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />

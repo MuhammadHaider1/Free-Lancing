@@ -128,7 +128,7 @@ function FreelancerProfile() {
             <div className="absolute inset-0 bg-grid bg-grid opacity-25" aria-hidden="true" />
           </div>
           <div className="px-5 pb-6 sm:px-7">
-            <div className="-mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="relative z-10 -mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
                 <Avatar name={freelancer.username} size="xl" className="ring-4 ring-white" />
                 <div className="pb-1">
