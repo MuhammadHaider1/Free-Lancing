@@ -1,145 +1,165 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useNavigate, useParams } from "react-router-dom";
-import API from "../services/api";
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { MessageSquareQuote, ShieldCheck, Star } from 'lucide-react'
+import API from '../services/api'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+
+const ratingLabels = {
+  5: 'Exceptional — exceeded expectations',
+  4: 'Great — delivered as promised',
+  3: 'Good — a few rough edges',
+  2: 'Below expectations',
+  1: 'Poor experience',
+}
 
 function CreateReview() {
-  const { orderId } = useParams();
-  const navigate = useNavigate();
+  const { orderId } = useParams()
+  const navigate = useNavigate()
 
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [rating, setRating] = useState(5)
+  const [hovered, setHovered] = useState(0)
+  const [comment, setComment] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const submitReview = async () => {
-    setLoading(true);
-    setError("");
+  const submitReview = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setError('')
     try {
-      await API.post("/reviews/", {
-        order: orderId,
-        rating,
-        comment
-      });
-
-      navigate("/orders");
+      await API.post('/reviews/', { order: orderId, rating, comment })
+      navigate('/orders')
     } catch (err) {
-      console.log("REVIEW ERROR:", err.response?.data);
-      setError("Kuch error aya! " + JSON.stringify(err.response?.data || ""));
+      setError(
+        err.response?.data?.error ||
+          'We could not submit that review. Please try again in a moment.',
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition duration-200 text-sm bg-white";
+  const activeRating = hovered || rating
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-wrap">
+      <PageHeader
+        backTo="/orders"
+        backLabel="Back to orders"
+        eyebrow="Feedback"
+        title="Leave a review"
+        subtitle="Honest feedback helps the next client choose well — and helps great freelancers stand out."
+      />
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-600 text-white py-12 px-6">
-        <div className="max-w-lg mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <button
-              onClick={() => navigate(-1)}
-              className="text-white/70 hover:text-white text-sm mb-4 flex items-center gap-1 transition"
-            >
-              ← Back
-            </button>
-            <h1 className="text-4xl font-bold">Leave Review</h1>
-            <p className="opacity-80 mt-1">Share your experience with this order</p>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="max-w-lg mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+      <div className="container-page grid gap-6 pt-8 lg:grid-cols-[1.4fr_1fr]">
+        <motion.form
+          onSubmit={submitReview}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-lg p-8"
+          transition={{ duration: 0.45 }}
+          className="card p-5 sm:p-7"
         >
-
           {error && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-6"
-            >
-              ❌ {error}
-            </motion.div>
+            <div role="alert" className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
           )}
 
-          {/* Rating */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-5"
-          >
-            <label className="block text-gray-700 font-medium mb-2 text-sm">
-              Rating
-            </label>
-            <select
-              value={rating}
-              onChange={(e) => setRating(e.target.value)}
-              className={inputClass}
-            >
-              <option value="5">⭐⭐⭐⭐⭐</option>
-              <option value="4">⭐⭐⭐⭐</option>
-              <option value="3">⭐⭐⭐</option>
-              <option value="2">⭐⭐</option>
-              <option value="1">⭐</option>
-            </select>
-          </motion.div>
+          <div>
+            <span className="label">Your rating</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1" role="radiogroup" aria-label="Rating out of five">
+                {[1, 2, 3, 4, 5].map((value) => {
+                  const filled = value <= activeRating
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={rating === value}
+                      aria-label={`${value} star${value === 1 ? '' : 's'}`}
+                      onMouseEnter={() => setHovered(value)}
+                      onMouseLeave={() => setHovered(0)}
+                      onFocus={() => setHovered(value)}
+                      onBlur={() => setHovered(0)}
+                      onClick={() => setRating(value)}
+                      className="rounded-lg p-1 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+                    >
+                      <Star
+                        className={`h-8 w-8 transition ${
+                          filled ? 'fill-amber-400 text-amber-400' : 'fill-ink-100 text-ink-200'
+                        }`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  )
+                })}
+              </div>
+              <span className="text-sm font-semibold text-ink-700">{activeRating}.0 / 5</span>
+            </div>
+            <p className="mt-2 text-xs text-ink-500">{ratingLabels[activeRating]}</p>
+          </div>
 
-          {/* Comment */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.35 }}
-            className="mb-6"
-          >
-            <label className="block text-gray-700 font-medium mb-2 text-sm">
+          <div className="mt-6">
+            <label className="label" htmlFor="review-comment">
               Comment
             </label>
             <textarea
+              id="review-comment"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Write your review..."
-              rows="5"
-              className={inputClass}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder="What was it like working together? Mention communication, quality and timeliness."
+              rows="6"
+              className="input resize-none"
             />
-          </motion.div>
+            <p className="mt-1.5 text-xs text-ink-400">Specific feedback is far more useful than “great job”.</p>
+          </div>
 
-          {/* Submit */}
-          <motion.button
-            onClick={submitReview}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-70"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                </svg>
-                Submitting...
-              </span>
-            ) : '⭐ Submit Review'}
-          </motion.button>
+          <div className="mt-6 flex flex-col gap-2 border-t border-ink-100 pt-5 sm:flex-row-reverse">
+            <Button type="submit" loading={loading}>
+              <Star className="h-4 w-4" aria-hidden="true" />
+              Submit review
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+          </div>
+        </motion.form>
 
-        </motion.div>
+        <aside className="space-y-4">
+          <div className="card p-5">
+            <h2 className="flex items-center gap-2 font-display text-base font-bold text-ink-900">
+              <MessageSquareQuote className="h-4 w-4 text-brand-500" aria-hidden="true" />
+              What makes a useful review
+            </h2>
+            <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-ink-600">
+              <li className="flex items-start gap-2.5">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                Describe the quality of the delivered work.
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                Mention communication and adherence to the timeline.
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                Keep it fair, specific and free of personal remarks.
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-2xl border border-accent-200 bg-accent-50/70 p-5">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent-600" aria-hidden="true" />
+            <p className="text-sm leading-relaxed text-accent-800">
+              Reviews are tied to completed orders, so every rating reflects a real engagement.
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
-  );
+  )
 }
 
-export default CreateReview;
+export default CreateReview

@@ -1,165 +1,230 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import API from "../services/api";
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarClock,
+  CheckCircle2,
+  Clock,
+  Code2,
+  Megaphone,
+  MessageSquare,
+  Palette,
+  PenLine,
+  Puzzle,
+  ShieldCheck,
+  Sparkles,
+  Tag,
+  UserRound,
+} from 'lucide-react'
+import API from '../services/api'
+import { categoryMeta, formatCurrency } from '../lib/utils'
+import PageHeader from '../components/ui/PageHeader'
+import { PageLoader } from '../components/ui/Spinner'
+import EmptyState from '../components/ui/EmptyState'
+import Avatar from '../components/ui/Avatar'
+
+const categoryIcons = {
+  web_dev: Code2,
+  graphic: Palette,
+  writing: PenLine,
+  marketing: Megaphone,
+  other: Puzzle,
+}
+
+const guarantees = [
+  { icon: ShieldCheck, text: 'Payment held safely until you approve the delivery' },
+  { icon: MessageSquare, text: 'Built-in messaging keeps the brief and files together' },
+  { icon: CheckCircle2, text: 'Clear scope, price and timeline agreed up front' },
+]
 
 function ServiceDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams()
+  const navigate = useNavigate()
 
-  const [service, setService] = useState(null);
-  const [error, setError] = useState("");
+  const [service, setService] = useState(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchService();
-  }, []);
-
-  const fetchService = async () => {
-    try {
-      const res = await API.get(`/services/${id}/`);
-      setService(res.data);
-    } catch (err) {
-      console.log(err);
-      setError("Kuch error aya! Service load nahi hui.");
+    const fetchService = async () => {
+      try {
+        const res = await API.get(`/services/${id}/`)
+        setService(res.data)
+      } catch {
+        setError('We could not load this service. It may have been removed, or the link is incorrect.')
+      }
     }
-  };
+    fetchService()
+  }, [id])
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl"
-        >
-          ❌ {error}
-        </motion.div>
+      <div className="page-wrap">
+        <div className="container-page pt-10">
+          <EmptyState
+            icon={Puzzle}
+            title="Service unavailable"
+            description={error}
+            action={
+              <Link to="/services" className="btn-primary">
+                Back to services
+              </Link>
+            }
+          />
+        </div>
       </div>
-    );
+    )
   }
 
   if (!service) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-10 w-10 border-4 border-green-500 border-t-transparent rounded-full"
-        />
+      <div className="page-wrap">
+        <PageLoader label="Loading service…" />
       </div>
-    );
+    )
   }
 
-  const detailRows = [
-    { label: "Delivery", value: `${service.delivery_days} Days` },
-    { label: "Category", value: service.category },
-    { label: "Freelancer", value: service.freelancer_name },
-  ];
+  const meta = categoryMeta(service.category)
+  const Icon = categoryIcons[service.category] || Puzzle
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-wrap">
+      <PageHeader
+        backTo="/services"
+        backLabel="Back to services"
+        eyebrow={meta.label}
+        title={service.title}
+        subtitle="Service details, delivery expectations and pricing — all in one place."
+      />
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-600 text-white py-12 px-6">
-        <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
+      <div className="container-page grid gap-6 pt-8 lg:grid-cols-[1.6fr_1fr]">
+        <div className="space-y-6">
+          <motion.section
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.45 }}
+            className="card overflow-hidden"
           >
-            <button
-              onClick={() => navigate(-1)}
-              className="text-white/70 hover:text-white text-sm mb-4 flex items-center gap-1 transition"
-            >
-              ← Back to Services
-            </button>
-            <h1 className="text-4xl font-bold">{service.title}</h1>
-            <p className="opacity-80 mt-1">Service details and pricing</p>
-          </motion.div>
-        </div>
-      </div>
+            <div className={`relative h-32 bg-gradient-to-br ${meta.gradient} sm:h-40`}>
+              <div className="absolute inset-0 bg-grid bg-grid opacity-25" aria-hidden="true" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" aria-hidden="true" />
+              <span className="absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur">
+                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                {meta.label}
+              </span>
+            </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-lg p-8"
-        >
+            <div className="p-5 sm:p-7">
+              <h2 className="font-display text-xl font-bold text-ink-900">About this service</h2>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-600">
+                {service.description}
+              </p>
 
-          {/* Description */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-5"
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Tag, label: 'Category', value: meta.label },
+                  { icon: Clock, label: 'Delivery', value: `${service.delivery_days} days` },
+                  { icon: BadgeCheck, label: 'Status', value: 'Available' },
+                ].map(({ icon: RowIcon, label, value }) => (
+                  <div key={label} className="rounded-xl border border-ink-100 bg-ink-50/60 p-3.5">
+                    <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                      <RowIcon className="h-3 w-3" aria-hidden="true" />
+                      {label}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-ink-800">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, duration: 0.45 }}
+            className="card p-5 sm:p-7"
           >
-            <label className="block text-gray-700 font-medium mb-2 text-sm">
-              Description
-            </label>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {service.description}
-            </p>
-          </motion.div>
-
-          {/* Price */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.35 }}
-            className="mb-6"
-          >
-            <span className="inline-block bg-blue-50 text-blue-600 font-bold text-2xl px-4 py-2 rounded-xl">
-              ${service.price}
-            </span>
-          </motion.div>
-
-          {/* Detail Rows */}
-          <div className="grid grid-cols-1 gap-3 mb-6">
-            {detailRows.map((row, i) => (
-              <motion.div
-                key={row.label}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-4 py-3"
-              >
-                <span className="text-gray-500 text-sm font-medium">{row.label}</span>
-                <span className="text-gray-800 font-semibold text-sm">{row.value}</span>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Tips Box */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.55 }}
-            className="bg-green-50 border border-green-100 rounded-xl p-4 mb-6"
-          >
-            <p className="text-green-700 text-sm font-semibold mb-2">💡 Before you order:</p>
-            <ul className="text-green-600 text-xs space-y-1">
-              <li>✅ Check delivery time fits your deadline</li>
-              <li>✅ Review freelancer's profile and past work</li>
-              <li>✅ Message them if you have questions</li>
+            <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink-900">
+              <Sparkles className="h-5 w-5 text-brand-500" aria-hidden="true" />
+              What you get
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {guarantees.map(({ icon: GuaranteeIcon, text }) => (
+                <li key={text} className="flex items-start gap-3 text-sm text-ink-600">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-50 text-accent-600">
+                    <GuaranteeIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
+                  {text}
+                </li>
+              ))}
             </ul>
+          </motion.section>
+        </div>
+
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.45 }}
+            className="card overflow-hidden"
+          >
+            <div className="border-b border-ink-100 bg-ink-50/60 px-5 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Starting at</p>
+              <p className="mt-1 font-display text-3xl font-bold tracking-tight text-ink-900">
+                {formatCurrency(service.price)}
+              </p>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-ink-500">
+                <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
+                Delivered in {service.delivery_days} days
+              </p>
+            </div>
+
+            <div className="space-y-3 p-5">
+              <div className="flex items-center justify-between rounded-xl border border-ink-100 bg-white px-3.5 py-2.5">
+                <span className="text-xs font-medium text-ink-500">Delivery</span>
+                <span className="text-sm font-semibold text-ink-900">{service.delivery_days} days</span>
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-ink-100 bg-white px-3.5 py-2.5">
+                <span className="text-xs font-medium text-ink-500">Category</span>
+                <span className="text-sm font-semibold text-ink-900">{meta.short}</span>
+              </div>
+
+              <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-3.5">
+                <p className="text-xs leading-relaxed text-brand-800">
+                  Have a question before ordering? Open the freelancer profile and start a conversation.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate(`/freelancers/${service.freelancer}`)}
+                className="btn-primary w-full"
+              >
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                View freelancer profile
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <Link to="/services" className="btn-secondary w-full">
+                Browse more services
+              </Link>
+            </div>
           </motion.div>
 
-          {/* CTA */}
-          <motion.button
-            onClick={() => navigate(`/freelancers/${service.freelancer}`)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-            className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition duration-200"
-          >
-            👤 View Freelancer Profile
-          </motion.button>
-
-        </motion.div>
+          <div className="card flex items-center gap-3 p-4">
+            <Avatar name={service.freelancer_name} size="md" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Offered by</p>
+              <p className="truncate text-sm font-semibold text-ink-900">{service.freelancer_name || 'Freelancer'}</p>
+              {service.freelancer_bio && (
+                <p className="mt-0.5 line-clamp-1 text-xs text-ink-500">{service.freelancer_bio}</p>
+              )}
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
-  );
+  )
 }
 
-export default ServiceDetail;
+export default ServiceDetail

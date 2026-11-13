@@ -1,7 +1,32 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import API from '../services/api'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import {
+  ArrowRight,
+  CircleDollarSign,
+  Clock,
+  Layers,
+  Lightbulb,
+  Sparkles,
+  Type,
+} from 'lucide-react'
+import API from '../services/api'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+
+const categories = [
+  { value: 'web_dev', label: 'Web development' },
+  { value: 'graphic', label: 'Graphic design' },
+  { value: 'writing', label: 'Content writing' },
+  { value: 'marketing', label: 'Digital marketing' },
+  { value: 'other', label: 'Other' },
+]
+
+const tips = [
+  'Lead with the outcome the client gets, not the tools you use.',
+  'Price for the value delivered and keep the scope explicit.',
+  'Promise a delivery window you can confidently hit.',
+]
 
 function CreateService() {
   const navigate = useNavigate()
@@ -15,203 +40,191 @@ function CreateService() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setLoading(true)
+    setError('')
     try {
       await API.post('/services/', form)
       navigate('/services')
-    } catch (err) {
-      setError('Kuch error aya — dobara try karo!')
+    } catch {
+      setError('We could not create that service. Please check the fields and try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const categories = [
-    { value: 'web_dev', label: '💻 Web Development' },
-    { value: 'graphic', label: '🎨 Graphic Design' },
-    { value: 'writing', label: '✍️ Content Writing' },
-    { value: 'marketing', label: '📣 Digital Marketing' },
-    { value: 'other', label: '🔧 Other' },
-  ]
-
-  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-200 text-sm bg-white"
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-wrap">
+      <PageHeader
+        backTo="/services"
+        backLabel="Back to services"
+        eyebrow="Freelancer workspace"
+        title="Create a service"
+        subtitle="Turn your expertise into a clear, buyable package with a price and a delivery window."
+      />
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-600 text-white py-12 px-6">
-        <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <button
-              onClick={() => navigate('/services')}
-              className="text-white/70 hover:text-white text-sm mb-4 flex items-center gap-1 transition"
-            >
-              ← Back to Services
-            </button>
-            <h1 className="text-4xl font-bold">Create Service</h1>
-            <p className="opacity-80 mt-1">Showcase your skills to clients</p>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+      <div className="container-page grid gap-6 pt-8 lg:grid-cols-[1.5fr_1fr]">
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-lg p-8"
+          transition={{ duration: 0.45 }}
+          className="card p-5 sm:p-7"
         >
-
           {error && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-6"
-            >
-              ❌ {error}
-            </motion.div>
+            <div role="alert" className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-
-            {/* Title */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mb-5"
-            >
-              <label className="block text-gray-700 font-medium mb-2 text-sm">
-                Service Title
+          <div className="space-y-5">
+            <div>
+              <label className="label" htmlFor="service-title">
+                Service title
               </label>
-              <input
-                type="text"
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                className={inputClass}
-                placeholder="e.g. I will build a React website"
-                required
-              />
-            </motion.div>
+              <div className="relative">
+                <Type className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                <input
+                  id="service-title"
+                  type="text"
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  className="input pl-10"
+                  placeholder="e.g. I will build a fast React landing page"
+                  required
+                />
+              </div>
+              <p className="mt-1.5 text-xs text-ink-400">Start with “I will…” — it reads like an offer.</p>
+            </div>
 
-            {/* Description */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-              className="mb-5"
-            >
-              <label className="block text-gray-700 font-medium mb-2 text-sm">
+            <div>
+              <label className="label" htmlFor="service-description">
                 Description
               </label>
               <textarea
+                id="service-description"
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                rows="4"
-                className={inputClass}
-                placeholder="Describe your service in detail..."
+                rows="7"
+                className="input resize-none"
+                placeholder="Explain what is included, how you work, and what the client receives…"
                 required
               />
-            </motion.div>
-
-            {/* Category */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mb-5"
-            >
-              <label className="block text-gray-700 font-medium mb-2 text-sm">
-                Category
-              </label>
-              <select
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-                className={inputClass}
-              >
-                {categories.map(cat => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
-                ))}
-              </select>
-            </motion.div>
-
-            {/* Price & Delivery */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.45 }}
-              >
-                <label className="block text-gray-700 font-medium mb-2 text-sm">
-                  Price ($)
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={form.price}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="500"
-                  required
-                />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <label className="block text-gray-700 font-medium mb-2 text-sm">
-                  Delivery Days
-                </label>
-                <input
-                  type="number"
-                  name="delivery_days"
-                  value={form.delivery_days}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="7"
-                  required
-                />
-              </motion.div>
             </div>
 
-            {/* Submit */}
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-70"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  Creating...
-                </span>
-              ) : '🚀 Create Service'}
-            </motion.button>
+            <div>
+              <label className="label" htmlFor="service-category">
+                Category
+              </label>
+              <div className="relative">
+                <Layers className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                <select
+                  id="service-category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  className="input pl-10"
+                >
+                  {categories.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-          </form>
-        </motion.div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="service-price">
+                  Price (USD)
+                </label>
+                <div className="relative">
+                  <CircleDollarSign className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                  <input
+                    id="service-price"
+                    type="number"
+                    min="1"
+                    name="price"
+                    value={form.price}
+                    onChange={handleChange}
+                    className="input pl-10"
+                    placeholder="500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="label" htmlFor="service-days">
+                  Delivery days
+                </label>
+                <div className="relative">
+                  <Clock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                  <input
+                    id="service-days"
+                    type="number"
+                    min="1"
+                    name="delivery_days"
+                    value={form.delivery_days}
+                    onChange={handleChange}
+                    className="input pl-10"
+                    placeholder="7"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2 border-t border-ink-100 pt-5 sm:flex-row-reverse">
+            <Button type="submit" loading={loading}>
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              Publish service
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => navigate('/services')}>
+              Cancel
+            </Button>
+          </div>
+        </motion.form>
+
+        <aside className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, duration: 0.45 }}
+            className="card p-5"
+          >
+            <h2 className="flex items-center gap-2 font-display text-base font-bold text-ink-900">
+              <Lightbulb className="h-4 w-4 text-amber-500" aria-hidden="true" />
+              Make it easy to buy
+            </h2>
+            <ul className="mt-3 space-y-2.5">
+              {tips.map((tip) => (
+                <li key={tip} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-600">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <div className="rounded-2xl border border-accent-200 bg-accent-50/70 p-5">
+            <p className="text-sm font-semibold text-accent-800">Why packages work</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-accent-700">
+              Clients prefer a fixed price and timeline over a custom quote. A clear package removes
+              hesitation and shortens the buying decision.
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
   )

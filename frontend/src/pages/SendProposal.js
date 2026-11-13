@@ -1,184 +1,182 @@
 import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useParams, useNavigate } from 'react-router-dom'
+import {
+  ArrowRight,
+  CircleDollarSign,
+  Clock,
+  FileText,
+  Lightbulb,
+  Send,
+} from 'lucide-react'
 import API from '../services/api'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+
+const tips = [
+  'Show you understood the brief — reference specific requirements.',
+  'Explain why you are the right fit, with relevant proof.',
+  'Quote a fair bid and a timeline you can genuinely deliver.',
+]
 
 function SendProposal() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const [form, setForm] = useState({
-    cover_letter: '',
-    bid_amount: '',
-    delivery_days: '',
-  })
+  const [form, setForm] = useState({ cover_letter: '', bid_amount: '', delivery_days: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setLoading(true)
     setError('')
     try {
-      await API.post('/projects/proposals/', {
-        ...form,
-        project: projectId,
-      })
+      await API.post('/projects/proposals/', { ...form, project: projectId })
       navigate('/projects')
     } catch (err) {
-      setError('Kuch error aya — dobara try karo!')
+      setError(
+        err.response?.data?.error ||
+          'We could not send that proposal. Please check the fields and try again.',
+      )
     } finally {
       setLoading(false)
     }
   }
 
-  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100 transition duration-200 text-sm bg-white"
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="page-wrap">
+      <PageHeader
+        backTo="/projects"
+        backLabel="Back to projects"
+        eyebrow="Freelancer workspace"
+        title="Send a proposal"
+        subtitle="A focused pitch beats a long one. Show you understood the brief and how you will deliver."
+      />
 
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-600 text-white py-12 px-6">
-        <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <button
-              onClick={() => navigate(-1)}
-              className="text-white/70 hover:text-white text-sm mb-4 flex items-center gap-1 transition"
-            >
-              ← Back to Projects
-            </button>
-            <h1 className="text-4xl font-bold">Send Proposal</h1>
-            <p className="opacity-80 mt-1">Pitch yourself and win this project</p>
-          </motion.div>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
+      <div className="container-page grid gap-6 pt-8 lg:grid-cols-[1.5fr_1fr]">
+        <motion.form
+          onSubmit={handleSubmit}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-lg p-8"
+          transition={{ duration: 0.45 }}
+          className="card p-5 sm:p-7"
         >
-
           {error && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-6"
-            >
-              ❌ {error}
-            </motion.div>
+            <div role="alert" className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-
-            {/* Cover Letter */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mb-5"
-            >
-              <label className="block text-gray-700 font-medium mb-2 text-sm">
-                Cover Letter
+          <div className="space-y-5">
+            <div>
+              <label className="label" htmlFor="cover-letter">
+                Cover letter
               </label>
               <textarea
+                id="cover-letter"
                 name="cover_letter"
                 value={form.cover_letter}
                 onChange={handleChange}
-                rows="4"
-                className={inputClass}
-                placeholder="Apna cover letter likho..."
+                rows="8"
+                className="input resize-none"
+                placeholder="Hi — I read your brief and here is exactly how I would approach it…"
                 required
               />
-            </motion.div>
-
-            {/* Bid Amount & Delivery Days */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <label className="block text-gray-700 font-medium mb-2 text-sm">
-                  Bid Amount ($)
-                </label>
-                <input
-                  type="number"
-                  name="bid_amount"
-                  value={form.bid_amount}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="Kitna charge karoge?"
-                  required
-                />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.45 }}
-              >
-                <label className="block text-gray-700 font-medium mb-2 text-sm">
-                  Delivery Days
-                </label>
-                <input
-                  type="number"
-                  name="delivery_days"
-                  value={form.delivery_days}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="Kitne din mein deliver karoge?"
-                  required
-                />
-              </motion.div>
+              <p className="mt-1.5 text-xs text-ink-400">
+                Aim for 120–200 words: context, approach, proof, and a clear next step.
+              </p>
             </div>
 
-            {/* Tips Box */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="bg-green-50 border border-green-100 rounded-xl p-4 mb-6"
-            >
-              <p className="text-green-700 text-sm font-semibold mb-2">💡 Tips for a winning proposal:</p>
-              <ul className="text-green-600 text-xs space-y-1">
-                <li>✅ Explain why you're the right fit</li>
-                <li>✅ Quote a fair, competitive bid</li>
-                <li>✅ Give a realistic delivery timeline</li>
-              </ul>
-            </motion.div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="bid-amount">
+                  Bid amount (USD)
+                </label>
+                <div className="relative">
+                  <CircleDollarSign className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                  <input
+                    id="bid-amount"
+                    type="number"
+                    min="1"
+                    name="bid_amount"
+                    value={form.bid_amount}
+                    onChange={handleChange}
+                    className="input pl-10"
+                    placeholder="750"
+                    required
+                  />
+                </div>
+              </div>
 
-            {/* Submit */}
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-70"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  Sending...
-                </span>
-              ) : '📨 Send Proposal'}
-            </motion.button>
+              <div>
+                <label className="label" htmlFor="proposal-days">
+                  Delivery days
+                </label>
+                <div className="relative">
+                  <Clock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+                  <input
+                    id="proposal-days"
+                    type="number"
+                    min="1"
+                    name="delivery_days"
+                    value={form.delivery_days}
+                    onChange={handleChange}
+                    className="input pl-10"
+                    placeholder="10"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-          </form>
-        </motion.div>
+          <div className="mt-6 flex flex-col gap-2 border-t border-ink-100 pt-5 sm:flex-row-reverse">
+            <Button type="submit" loading={loading}>
+              <Send className="h-4 w-4" aria-hidden="true" />
+              Send proposal
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+          </div>
+        </motion.form>
+
+        <aside className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, duration: 0.45 }}
+            className="card p-5"
+          >
+            <h2 className="flex items-center gap-2 font-display text-base font-bold text-ink-900">
+              <Lightbulb className="h-4 w-4 text-amber-500" aria-hidden="true" />
+              Winning proposal tips
+            </h2>
+            <ul className="mt-3 space-y-2.5">
+              {tips.map((tip) => (
+                <li key={tip} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-600">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          <div className="card flex items-start gap-3 p-5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+              <FileText className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <p className="text-sm leading-relaxed text-ink-600">
+              Your proposal is saved to <span className="font-semibold text-ink-900">My proposals</span>, where
+              you can track its status as the client reviews it.
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
   )

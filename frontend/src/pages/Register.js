@@ -1,197 +1,253 @@
 import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import {
+  AlertCircle,
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Laptop,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from 'lucide-react'
 import API from '../services/api'
-import { useNavigate } from 'react-router-dom'
+import AuthShell from '../components/AuthShell'
+
+const roles = [
+  {
+    value: 'client',
+    title: 'I am hiring',
+    desc: 'Post projects and build a team',
+    icon: Building2,
+  },
+  {
+    value: 'freelancer',
+    title: 'I am freelancing',
+    desc: 'Sell services and win work',
+    icon: Laptop,
+  },
+]
 
 function Register() {
-  const [form, setForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-    role: 'client'
-  })
+  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'client' })
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setLoading(true)
+    setError('')
     try {
       await API.post('/users/register/', form)
-      setSuccess('Account Successfully Created!')
-      setError('')
-      setTimeout(() => navigate('/login'), 2000)
+      setSuccess(true)
+      window.setTimeout(() => navigate('/login'), 2200)
     } catch (err) {
-      setError('Error! Please try again.')
-      setSuccess('')
+      const data = err.response?.data
+      if (data && typeof data === 'object') {
+        const firstValue = Object.values(data)[0]
+        setError(Array.isArray(firstValue) ? String(firstValue[0]) : String(firstValue))
+      } else {
+        setError('We could not create your account. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition duration-200 text-sm"
-
-  const fields = [
-    { label: 'Username', name: 'username', type: 'text', placeholder: 'Enter your username' },
-    { label: 'Email', name: 'email', type: 'email', placeholder: 'Enter your email' },
-    { label: 'Password', name: 'password', type: 'password', placeholder: 'Enter your password' },
-  ]
+  if (success) {
+    return (
+      <AuthShell
+        eyebrow="Account created"
+        title="Welcome to FreelanceHub"
+        subtitle="Your account is ready. Let's get you to the right place."
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="rounded-2xl border border-accent-200 bg-white p-8 text-center shadow-soft"
+        >
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-50 text-accent-600 ring-1 ring-inset ring-accent-100">
+            <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+          </span>
+          <h2 className="mt-5 font-display text-xl font-bold text-ink-900">Account successfully created</h2>
+          <p className="mt-2 text-sm text-ink-500">
+            Redirecting you to the sign-in page so you can get started.
+          </p>
+          <div className="mx-auto mt-6 h-1.5 w-40 overflow-hidden rounded-full bg-ink-100">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 2, ease: 'linear' }}
+              className="h-full rounded-full bg-accent-500"
+            />
+          </div>
+          <Link to="/login" className="btn-primary mt-7 w-full">
+            Go to sign in
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </motion.div>
+      </AuthShell>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br  from-green-500 via-teal-500 to-blue-600 flex items-center justify-center px-4">
-
-      {/* Background decorations */}
-      <div className="absolute top-10 right-20 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 left-20 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative z-10"
-      >
-
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-3xl font-bold">
-            Freelance<span className="text-blue-600">Hub</span>
-          </h1>
-          <p className="text-gray-400 mt-1 text-sm">Create your account today!</p>
-        </motion.div>
-
-        {/* Error */}
+    <AuthShell
+      eyebrow="Join FreelanceHub"
+      title="Create your account"
+      subtitle="Free to join. Hire talent or sell your services in minutes."
+    >
+      <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-soft sm:p-7">
         {error && (
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-4 text-center"
-          >
-            {error}
-          </motion.div>
-        )}
-
-        {/* Success */}
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-green-50 border border-green-200 text-green-600 text-sm px-4 py-3 rounded-xl mb-4 text-center"
-          >
-            ✅ {success} Redirecting to login...
-          </motion.div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-
-          {/* Input Fields */}
-          {fields.map((field, index) => (
-            <motion.div
-              key={field.name}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
-              className="mb-4"
-            >
-              <label className="block text-gray-700 font-medium mb-1 text-sm">
-                {field.label}
-              </label>
-              <input
-                type={field.type}
-                name={field.name}
-                value={form[field.name]}
-                onChange={handleChange}
-                className={inputClass}
-                placeholder={field.placeholder}
-              />
-            </motion.div>
-          ))}
-
-          {/* Role Select */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="mb-6"
-          >
-            <label className="block text-gray-700 font-medium mb-2 text-sm">
-              I am a...
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {['client', 'freelancer'].map((r) => (
-                <motion.button
-                  key={r}
-                  type="button"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setForm({ ...form, role: r })}
-                  className={`py-3 rounded-xl border-2 font-semibold text-sm capitalize transition duration-200 ${
-                    form.role === r
-                      ? 'border-blue-600 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 text-gray-500 hover:border-blue-300'
-                  }`}
-                >
-                  {r === 'client' ? '🏢 Client' : '💻 Freelancer'}
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Submit Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
+            role="alert"
+            className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-sm text-rose-700"
           >
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition duration-200 text-sm disabled:opacity-70"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                  Creating Account...
-                </span>
-              ) : (
-                'Create Account'
-              )}
-            </motion.button>
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{error}</span>
           </motion.div>
+        )}
 
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="username" className="label">
+              Username
+            </label>
+            <div className="relative">
+              <UserRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+              <input
+                id="username"
+                type="text"
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                className="input pl-10"
+                placeholder="Choose a username"
+                autoComplete="username"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="email" className="label">
+              Email address
+            </label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                className="input pl-10"
+                placeholder="you@company.com"
+                autoComplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="label">
+              Password
+            </label>
+            <div className="relative">
+              <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden="true" />
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                className="input px-10"
+                placeholder="At least 8 characters"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend className="label">I want to…</legend>
+            <div className="grid grid-cols-2 gap-3">
+              {roles.map(({ value, title, desc, icon: Icon }) => {
+                const active = form.role === value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setForm({ ...form, role: value })}
+                    aria-pressed={active}
+                    className={`rounded-xl border p-3.5 text-left transition duration-200 ${
+                      active
+                        ? 'border-brand-500 bg-brand-50 ring-4 ring-brand-500/10'
+                        : 'border-ink-200 bg-white hover:border-ink-300 hover:bg-ink-50'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                        active ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-500'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="mt-2.5 block text-sm font-semibold text-ink-900">{title}</span>
+                    <span className="mt-0.5 block text-[11px] leading-snug text-ink-400">{desc}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </fieldset>
+
+          <p className="text-xs leading-relaxed text-ink-400">
+            By creating an account you agree to our Terms of Service and Privacy Policy.
+          </p>
+
+          <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+            {loading ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+                Creating account…
+              </>
+            ) : (
+              <>
+                Create free account
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </>
+            )}
+          </button>
         </form>
 
-        {/* Login Link */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="text-center text-gray-400 mt-6 text-sm"
-        >
+        <p className="mt-6 text-center text-sm text-ink-500">
           Already have an account?{' '}
-          <a href="/login" className="text-blue-600 font-semibold hover:underline">
-            Login
-          </a>
-        </motion.p>
-
-      </motion.div>
-    </div>
+          <Link to="/login" className="font-semibold text-brand-700 hover:text-brand-800">
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </AuthShell>
   )
 }
 

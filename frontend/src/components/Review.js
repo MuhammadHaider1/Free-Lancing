@@ -1,85 +1,113 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import API from "../services/api";
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { CalendarDays, MessageSquareQuote, Star } from 'lucide-react'
+import API from '../services/api'
+import { formatDate } from '../lib/utils'
+import { ListSkeleton } from '../components/ui/Skeleton'
+import Avatar from '../components/ui/Avatar'
+
+function Stars({ rating = 0 }) {
+  return (
+    <span className="inline-flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Star
+          key={index}
+          className={`h-3.5 w-3.5 ${
+            index < Math.round(Number(rating) || 0)
+              ? 'fill-amber-400 text-amber-400'
+              : 'fill-ink-100 text-ink-200'
+          }`}
+          aria-hidden="true"
+        />
+      ))}
+    </span>
+  )
+}
 
 function Reviews({ freelancerId }) {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await API.get(`/reviews/?freelancer=${freelancerId}`);
-        setReviews(
-          Array.isArray(res.data.results) ? res.data.results : res.data
-        );
-      } catch (err) {
-        console.log(err);
+        const res = await API.get(`/reviews/?freelancer=${freelancerId}`)
+        setReviews(Array.isArray(res.data.results) ? res.data.results : res.data || [])
+      } catch {
+        setReviews([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
     if (freelancerId) {
-      fetchReviews();
+      fetchReviews()
+    } else {
+      setLoading(false)
     }
-  }, [freelancerId]);
+  }, [freelancerId])
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
+    <motion.section
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       className="mt-8"
     >
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Reviews</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold text-ink-900">
+          <MessageSquareQuote className="h-4 w-4 text-brand-500" aria-hidden="true" />
+          Client reviews
+        </h2>
+        <span className="badge-neutral">{reviews.length}</span>
+      </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-10">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full"
-          />
+        <div className="mt-4">
+          <ListSkeleton rows={2} />
         </div>
       ) : reviews.length === 0 ? (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-gray-500 text-sm"
-        >
-          No reviews yet
-        </motion.p>
+        <div className="mt-4 rounded-xl border border-dashed border-ink-200 bg-ink-50/50 px-4 py-10 text-center">
+          <p className="text-sm font-medium text-ink-600">No reviews yet</p>
+          <p className="mt-1 text-xs text-ink-400">Completed orders will start building this reputation.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="mt-4 space-y-3">
           <AnimatePresence>
-            {reviews.map((review, i) => (
-              <motion.div
+            {reviews.map((review, index) => (
+              <motion.article
                 key={review.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.4 }}
-                className="bg-white rounded-2xl shadow-lg p-5"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04, duration: 0.3 }}
+                className="card p-5"
               >
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-gray-800">{review.client_name}</h3>
-                  <span className="text-yellow-500 text-sm">
-                    {"⭐".repeat(review.rating)}
-                  </span>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={review.client_name} size="sm" />
+                    <div>
+                      <p className="text-sm font-semibold text-ink-900">{review.client_name || 'Client'}</p>
+                      {review.freelancer_name && (
+                        <p className="text-[11px] text-ink-400">for {review.freelancer_name}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Stars rating={review.rating} />
                 </div>
 
-                <p className="mt-3 text-gray-700 text-sm">{review.comment}</p>
+                <p className="mt-3 text-sm leading-relaxed text-ink-700">{review.comment}</p>
 
-                <p className="text-xs text-gray-400 mt-2">
-                  {new Date(review.created_at).toLocaleDateString()}
+                <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-ink-400">
+                  <CalendarDays className="h-3 w-3" aria-hidden="true" />
+                  {formatDate(review.created_at)}
                 </p>
-              </motion.div>
+              </motion.article>
             ))}
           </AnimatePresence>
         </div>
       )}
-    </motion.div>
-  );
+    </motion.section>
+  )
 }
 
-export default Reviews;
+export default Reviews
