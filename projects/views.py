@@ -9,6 +9,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from notifications.models import Notification
+from orders.services import accept_proposal
+from orders.serializers import OrderSerializer
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
@@ -113,21 +115,14 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 "Only project owner can accept proposal."
             )
 
-        Proposal.objects.filter(
-            project=proposal.project,
-            status='pending'
-        ).exclude(
-            id=proposal.id
-        ).update(status='rejected')
-
-        proposal.status = 'accepted'
-        proposal.save()
-
-        proposal.project.status = 'in_progress'
-        proposal.project.save()
+        # Full hiring flow: reject other proposals, mark accepted, move the
+        # project to in_progress, and create the Order + Conversation so the
+        # client and freelancer can chat and deliver.
+        order = accept_proposal(proposal, request.user)
 
         return Response({
-            'message': 'Proposal accepted successfully'
+            'message': 'Proposal accepted successfully',
+            'order': OrderSerializer(order).data,
         })
     
     @action(detail=True, methods=['post'])

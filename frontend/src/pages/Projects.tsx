@@ -61,7 +61,13 @@ function Projects() {
     setActionId(id)
     setError('')
     try {
-      await API.post('/orders/accept-proposal/', { proposal_id: id })
+      const res = await API.post('/orders/accept-proposal/', { proposal_id: id })
+      // The accept endpoint creates the order + chat conversation.
+      const orderId = res.data?.id
+      if (orderId) {
+        navigate(`/orders/${orderId}`)
+        return
+      }
       await fetchProjects()
     } catch (err) {
       setError(err.response?.data?.error || 'We could not accept that proposal. Please try again.')

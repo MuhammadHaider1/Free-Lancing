@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from .models import Order
 from .serializers import OrderSerializer 
+from .services import accept_proposal
 from projects.models import Proposal
 from django.utils import timezone
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -46,35 +47,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         try:
             proposal = Proposal.objects.get(id=proposal_id)
         except Proposal.DoesNotExist:
-            return Response({"error": "Proposal nahi mila"}, status=404)
+            return Response({"error": "Proposal not found"}, status=404)
 
         if proposal.project.client != request.user:
-            raise PermissionDenied("Sirf client proposal accept kar sakta hai!")
+            raise PermissionDenied("Only the project's client can accept a proposal.")
 
-        if proposal.status == 'accepted':
-            return Response({"error": "Proposal pehle se accept ho chuka hai"}, status=400)
-
-        # Proposal accept karo
-        proposal.status = 'accepted'
-        proposal.save()
-
-        # Order banao
-        order = Order.objects.create(
-            proposal=proposal,
-            client=request.user,
-            freelancer=proposal.freelancer,
-            amount=proposal.bid_amount,
-        )
-
-        Conversation.objects.create(
-            order=order
-        )
-
-        Notification.objects.create(
-            user=proposal.freelancer,
-            message=f"{request.user.username} ne aap ka proposal accept kar liya hai",
-            notification_type="order"
-        )
+        # Same full hiring flow as /projects/proposals/{id}/accept/:
+        # reject other proposals, move the project to in_progress, and create
+        # the Order + Conversation for chat/delivery.
+        order = accept_proposal(proposal, request.user)
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=201)
@@ -117,43 +98,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
     
-
-    @action(
-    detail=True,
-    methods=['post'],
-    url_path='complete'
-)
-    def complete_order(self, request, pk=None):
-
-        order = self.get_object()
-
-
-        if order.client != request.user:
-            raise PermissionDenied(
-                "Sirf client complete kar sakta hai!"
-            )
-
-
-        if order.status != 'delivered':
-            return Response(
-                {"error":"Order abhi delivered nahi hai"},
-                status=400
-            )
-
-
-        order.status = 'completed'
-        order.save()
-
-        Notification.objects.create(
-            user=order.freelancer,
-            message=f"{request.user.username} ne order complete kar diya hai",
-            notification_type="order"
-)
-
-        serializer = OrderSerializer(order)
-
-        return Response(serializer.data)
-
 
     @action(
     detail=True,

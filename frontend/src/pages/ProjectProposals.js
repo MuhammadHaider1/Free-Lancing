@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   CalendarDays,
@@ -21,6 +21,7 @@ import Avatar from '../components/ui/Avatar'
 
 function ProjectProposals() {
   const { projectId } = useParams()
+  const navigate = useNavigate()
 
   const [proposals, setProposals] = useState([])
   const [loading, setLoading] = useState(true)
@@ -50,7 +51,16 @@ function ProjectProposals() {
     setActionLoadingId(proposalId)
     setError('')
     try {
-      await API.post(`/projects/proposals/${proposalId}/${action}/`)
+      const res = await API.post(`/projects/proposals/${proposalId}/${action}/`)
+      // Accepting a proposal also creates the order + chat conversation.
+      // Send the client straight to the order so they can start chatting.
+      if (action === 'accept') {
+        const orderId = res.data?.order?.id
+        if (orderId) {
+          navigate(`/orders/${orderId}`)
+          return
+        }
+      }
       await fetchProposals()
     } catch (err) {
       setError(err.response?.data?.error || `We could not ${action} that proposal. Please try again.`)

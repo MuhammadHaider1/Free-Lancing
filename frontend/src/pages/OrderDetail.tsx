@@ -20,6 +20,9 @@ import { PageLoader } from '../components/ui/Spinner'
 import Avatar from '../components/ui/Avatar'
 import ChatBox from '../components/ChatBox'
 
+// Where the API (and therefore uploaded media) is served from.
+const API_ORIGIN = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8001/api').replace(/\/api\/?$/, '')
+
 function OrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -208,7 +211,7 @@ function OrderDetail() {
                     </div>
                   </div>
                   <a
-                    href={`http://127.0.0.1:8000${order.delivery_file}`}
+                    href={`${API_ORIGIN}${order.delivery_file}`}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-primary shrink-0"
@@ -220,7 +223,7 @@ function OrderDetail() {
               </Card>
             )}
 
-            {order.status === 'in_progress' && role === 'freelancer' && (
+            {order.status === 'active' && role === 'freelancer' && (
               <Card>
                 <CardBody>
                   <h2 className="font-display text-lg font-bold text-ink-900">Submit delivery</h2>
