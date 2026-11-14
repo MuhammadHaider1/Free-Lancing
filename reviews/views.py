@@ -20,7 +20,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         if self.request.user.role != 'client':
             raise PermissionDenied(
-                "Sirf client review de sakta hai!"
+                "Only clients can leave reviews."
             )
 
         order_id = self.request.data.get('order')
@@ -29,22 +29,22 @@ class ReviewViewSet(viewsets.ModelViewSet):
             order = Order.objects.get(id=order_id)
         except Order.DoesNotExist:
             raise PermissionDenied(
-                "Order nahi mila!"
+                "Order not found."
             )
 
         if order.client != self.request.user:
             raise PermissionDenied(
-                "Sirf apne order ka review de sakte ho!"
+                "You can only review your own order."
             )
 
         if order.status != 'completed':
             raise PermissionDenied(
-                "Review sirf completed order par diya ja sakta hai!"
+                "You can only review a completed order."
             )
 
         if Review.objects.filter(order=order).exists():
             raise PermissionDenied(
-                "Review pehle hi diya ja chuka hai!"
+                "A review has already been submitted for this order."
             )
 
         serializer.save(

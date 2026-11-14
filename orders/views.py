@@ -73,7 +73,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         if order.freelancer != request.user:
             raise PermissionDenied(
-                "Sirf freelancer delivery submit kar sakta hai!"
+                "Only the freelancer can submit a delivery."
             )
 
         if not request.FILES.get('delivery_file'):
@@ -90,7 +90,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         Notification.objects.create(
             user=order.client,
-            message=f"{request.user.username} ne order deliver kar diya hai",
+            message=f"{request.user.username} delivered your order",
             notification_type="delivery"
 )
 
@@ -110,12 +110,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         if order.client != request.user:
             raise PermissionDenied(
-                "Sirf client complete kar sakta hai!"
+                "Only the client can complete this order."
             )
 
         if order.status != 'delivered':
             return Response(
-                {"error": "Order abhi delivered nahi hai"},
+                {"error": "The order has not been delivered yet."},
                 status=400
             )
 
@@ -144,7 +144,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         Notification.objects.create(
             user=order.freelancer,
-            message=f"{request.user.username} ne order complete kar diya hai",
+            message=f"{request.user.username} completed your order",
             notification_type="order"
         )
 

@@ -92,7 +92,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
         Notification.objects.create(
             user=proposal.project.client,
-            message=f"{self.request.user.username} ne aap ke project par proposal bheja hai",
+            message=f"{self.request.user.username} sent a proposal on your project",
             notification_type="proposal"
         )
 

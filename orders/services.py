@@ -64,7 +64,7 @@ def accept_proposal(proposal, client):
     if created:
         Notification.objects.create(
             user=proposal.freelancer,
-            message=f"{client.username} ne aap ka proposal accept kar liya hai",
+            message=f"{client.username} accepted your proposal",
             notification_type="order",
         )
 

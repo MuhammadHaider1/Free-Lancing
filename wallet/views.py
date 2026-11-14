@@ -70,7 +70,7 @@ class AdminWithdrawalListView(generics.ListAPIView):
 
     def get_queryset(self):
         if not self.request.user.is_staff:
-            raise PermissionDenied("Sirf admin ye dekh sakta hai")
+            raise PermissionDenied("Only admins can view this.")
         return WithdrawalRequest.objects.all().order_by('-created_at')
 
 
@@ -79,15 +79,15 @@ class AdminWithdrawalActionView(APIView):
 
     def post(self, request, pk, action):
         if not request.user.is_staff:
-            raise PermissionDenied("Sirf admin ye action le sakta hai")
+            raise PermissionDenied("Only admins can perform this action.")
 
         try:
             withdrawal = WithdrawalRequest.objects.get(pk=pk)
         except WithdrawalRequest.DoesNotExist:
-            return Response({"error": "Withdrawal request nahi mili"}, status=404)
+            return Response({"error": "Withdrawal request not found."}, status=404)
 
         if withdrawal.status != 'pending':
-            return Response({"error": "Ye request pehle se process ho chuki hai"}, status=400)
+            return Response({"error": "This request has already been processed."}, status=400)
 
         if action == 'approve':
             withdrawal.status = 'approved'
@@ -105,7 +105,7 @@ class AdminStatsView(APIView):
 
     def get(self, request):
         if not request.user.is_staff:
-            raise PermissionDenied("Sirf admin ye dekh sakta hai")
+            raise PermissionDenied("Only admins can view this.")
 
         total_users = User.objects.count()
         total_clients = User.objects.filter(role='client').count()
